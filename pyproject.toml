@@ -1,0 +1,31 @@
+[project]
+name = "latincy"
+version = "0.3.0"
+description = "Install and load the LatinCy spaCy pipelines for Latin"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+authors = [{ name = "Patrick J. Burns" }]
+# Model pins: must equal src/latincy/models.json (tests/test_table.py).
+# Each la-core-web-* on PyPI is a pointer sdist that installs the HF wheel.
+dependencies = ["la-core-web-sm==0.3.0"]
+
+[project.optional-dependencies]
+md = ["la-core-web-md==0.3.0"]
+lg = ["la-core-web-lg==0.3.0"]
+trf = ["la-core-web-trf==0.3.0"]
+
+[project.urls]
+Homepage = "https://huggingface.co/latincy"
+Source = "https://github.com/latincy/latincy"
+
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/latincy"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/latincy", "tests", "tools", "README.md", "LICENSE"]

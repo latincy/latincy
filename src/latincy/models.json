@@ -1,0 +1,45 @@
+{
+  "set": "LatinCy 0.3: the published 3.9.x HF wheels, released on PyPI as 0.3.0",
+  "models": {
+    "sm": {
+      "dist": "la_core_web_sm",
+      "version": "3.9.8",
+      "repo": "latincy/la_core_web_sm",
+      "revision": "c433837a66f74643ba49bf853b87927954c7d701",
+      "filename": "la_core_web_sm-3.9.8-py3-none-any.whl",
+      "sha256": "32c981b04ac18e567445362d092b6bbce6b715a40d1686975502c727c867c39b",
+      "bytes": 19192061,
+      "pypi_version": "0.3.0"
+    },
+    "md": {
+      "dist": "la_core_web_md",
+      "version": "3.9.8",
+      "repo": "latincy/la_core_web_md",
+      "revision": "45c9ac84afecfeb54bc0f6abacbc0aaf9ce1850e",
+      "filename": "la_core_web_md-3.9.8-py3-none-any.whl",
+      "sha256": "73703cddc90b4cc945833ae9824b1edf397c4f4c8ec69dd4e39883fc82a5ae11",
+      "bytes": 72876704,
+      "pypi_version": "0.3.0"
+    },
+    "lg": {
+      "dist": "la_core_web_lg",
+      "version": "3.9.8",
+      "repo": "latincy/la_core_web_lg",
+      "revision": "eef57207424f80d2e3806315bdc08554f432f740",
+      "filename": "la_core_web_lg-3.9.8-py3-none-any.whl",
+      "sha256": "5b5ca107fd74f5d5abc5269aa3a9710a93c69ff31109c89a5d7ac289f9ddfe72",
+      "bytes": 296937794,
+      "pypi_version": "0.3.0"
+    },
+    "trf": {
+      "dist": "la_core_web_trf",
+      "version": "3.9.9",
+      "repo": "latincy/la_core_web_trf",
+      "revision": "8e4accad1fd30bc962703d00ac3e7c0374125af0",
+      "filename": "la_core_web_trf-3.9.9-py3-none-any.whl",
+      "sha256": "040951755d50c3a6a743c2d3273c79e0fc7730a2e0b4f643c708a543a1ebf7ff",
+      "bytes": 1688946248,
+      "pypi_version": "0.3.0"
+    }
+  }
+}
