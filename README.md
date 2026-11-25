@@ -1,6 +1,12 @@
-# latincy
+<img src="https://raw.githubusercontent.com/latincy/latincy/main/assets/latincy-logo.png" alt="LatinCy" width="400">
 
-Install and load the [LatinCy](https://huggingface.co/latincy) spaCy pipelines for Latin.
+[![PyPI version](https://img.shields.io/pypi/v/latincy.svg)](https://pypi.org/project/latincy/)
+[![Python versions](https://img.shields.io/pypi/pyversions/latincy.svg)](https://pypi.org/project/latincy/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/latincy/latincy/blob/main/LICENSE)
+
+**Package installer for the LatinCy pipelines.**
+
+Installs and loads the [LatinCy](https://huggingface.co/latincy) spaCy pipelines for Latin.
 
 ## Install
 

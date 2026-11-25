@@ -27,3 +27,14 @@ def test_model_grid_matches_table():
 
 def test_no_placeholders():
     assert "<<PJB" not in README
+
+
+def test_images_and_links_absolute():
+    """PyPI renders the README without the repo, so relative links and images break there."""
+    for target in re.findall(r'(?:src="|\]\()([^")]+)', README):
+        assert target.startswith("https://"), target
+
+
+def test_logo_in_repo():
+    assert (ROOT / "assets" / "latincy-logo.png").is_file()
+    assert "raw.githubusercontent.com/latincy/latincy/main/assets/latincy-logo.png" in README
