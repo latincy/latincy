@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/latincy/latincy/main/assets/latincy-logo.png" alt="LatinCy" width="400">
+<img src="https://raw.githubusercontent.com/latincy/latincy/main/assets/latincy-logo.jpg" alt="LatinCy" width="400">
 
 # $dist $version
 

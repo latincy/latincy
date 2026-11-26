@@ -36,5 +36,5 @@ def test_images_and_links_absolute():
 
 
 def test_logo_in_repo():
-    assert (ROOT / "assets" / "latincy-logo.png").is_file()
-    assert "raw.githubusercontent.com/latincy/latincy/main/assets/latincy-logo.png" in README
+    assert (ROOT / "assets" / "latincy-logo.jpg").is_file()
+    assert "raw.githubusercontent.com/latincy/latincy/main/assets/latincy-logo.jpg" in README
