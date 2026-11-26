@@ -124,8 +124,10 @@ def make_pointer(entry: dict, wheel: Path, out_dir: Path, readme: Path = README)
     if digest != entry["sha256"]:
         raise SystemExit(f"{wheel}: sha256 {digest} != pinned {entry['sha256']}")
     pypi_version = entry.get("pypi_version", entry["version"])
-    metadata = set_urls(set_version(wheel_metadata(wheel, entry), pypi_version), entry)
-    page = readme_text(entry, readme)
+    header = set_urls(set_version(wheel_metadata(wheel, entry), pypi_version), entry)
+    # One metadata for both: what PyPI shows (PKG-INFO) is what gets installed
+    # (METADATA), never the HF model card (release gate rules 6, 8).
+    metadata = pkg_info(header, readme_text(entry, readme))
     pin = {
         "dist": entry["dist"],
         "version": pypi_version,
@@ -133,6 +135,7 @@ def make_pointer(entry: dict, wheel: Path, out_dir: Path, readme: Path = README)
         "filename": entry["filename"],
         "sha256": entry["sha256"],
         "url": entry.get("url") or hf_url(entry),
+        "model_url": f"https://huggingface.co/{entry['repo']}",
     }
     out_dir.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmp:
@@ -140,7 +143,7 @@ def make_pointer(entry: dict, wheel: Path, out_dir: Path, readme: Path = README)
         (src / "pyproject.toml").write_text(PYPROJECT, encoding="utf-8")
         (src / "latincy_pin.json").write_text(json.dumps(pin, indent=2) + "\n", encoding="utf-8")
         (src / "METADATA").write_text(metadata, encoding="utf-8")
-        (src / "PKG-INFO").write_text(pkg_info(metadata, page), encoding="utf-8")
+        (src / "PKG-INFO").write_text(metadata, encoding="utf-8")
         shutil.copyfile(BACKEND, src / "latincy_fetch.py")
         spec = importlib.util.spec_from_file_location(f"latincy_fetch_{entry['dist']}_{pypi_version}", src / "latincy_fetch.py")
         backend = importlib.util.module_from_spec(spec)

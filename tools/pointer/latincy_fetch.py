@@ -1,12 +1,18 @@
 """PEP 517 build backend for a LatinCy model pointer package.
 
 The sdist on PyPI holds no model. Building its wheel downloads the pinned
-wheel from Hugging Face, checks its sha256, and hands it to the installer.
-When the PyPI version or metadata differs from the HF wheel's (LatinCy release
-numbers on PyPI, e.g. 0.3.0, vs model versions, e.g. 3.9.8; public URLs set
-from the release table), only the distribution metadata is changed: the
-.dist-info name, METADATA and RECORD. Every other file, including the model's
-meta.json and data directory, is copied byte for byte.
+wheel from Hugging Face, checks its sha256, and repackages it under the
+LatinCy release version (e.g. 0.3.0 for model 3.9.8). What changes:
+
+- the .dist-info name, METADATA (this sdist's: version, public URLs, the
+  pointer README as description) and RECORD;
+- the top-level "url" value in the model's two meta.json copies, and the one
+  dead https://github.com/diyclassics/latincy link in the bundled model card
+  (README.md in the model directory), each set to the model's Hugging Face
+  repo. Only those bytes change.
+
+Every other file, including weights, vectors, code (functions.py) and the
+rest of meta.json and README.md, is copied byte for byte.
 
 Standard library only: the build needs no requirements.
 
@@ -22,6 +28,7 @@ import hashlib
 import io
 import json
 import os
+import re
 import shutil
 import tarfile
 import tempfile
@@ -75,11 +82,35 @@ def prepare_metadata_for_build_wheel(metadata_directory, config_settings=None):
     return dist_info.name
 
 
+_URL_FIELD = re.compile(rb'("url"\s*:\s*)"[^"]*"')
+
+
+def _set_meta_url(raw: bytes, url: str) -> bytes:
+    """Replace the value of meta.json's single "url" key, leaving every other byte."""
+    if len(_URL_FIELD.findall(raw)) != 1:
+        raise RuntimeError('meta.json: expected exactly one "url" key; refusing to guess.')
+    out = _URL_FIELD.sub(lambda m: m.group(1) + json.dumps(url).encode(), raw)
+    if json.loads(out).get("url") != url:
+        raise RuntimeError("meta.json: url rewrite did not take; refusing to install.")
+    return out
+
+
+_DEAD_LINK = re.compile(rb"https://github\.com/diyclassics/latincy(?![\w/-])")
+
+
+def _set_card_link(raw: bytes, url: str) -> bytes:
+    """Replace the bundled model card's one dead diyclassics link, leaving every other byte."""
+    if len(_DEAD_LINK.findall(raw)) != 1:
+        raise RuntimeError("README.md: expected exactly one dead diyclassics link; refusing to guess.")
+    return _DEAD_LINK.sub(url.encode(), raw)
+
+
 def _revision(src: Path, wheel_directory: Path) -> str:
-    """Copy the wheel under PIN['version'], changing only its distribution metadata:
-    the .dist-info name, METADATA (this sdist's: version and public URLs) and RECORD."""
+    """Copy the wheel under PIN['version']; see the module docstring for what changes."""
     dist, old, new = PIN["dist"], PIN["wheel_version"], PIN["version"]
     old_di, new_di = f"{dist}-{old}.dist-info/", f"{dist}-{new}.dist-info/"
+    metas = {f"{dist}/meta.json", f"{dist}/{dist}-{old}/meta.json"}
+    card = f"{dist}/{dist}-{old}/README.md"
     name = f"{dist}-{new}-py3-none-any.whl"
     record = io.StringIO()
     rows = csv.writer(record, lineterminator="\n")
@@ -95,8 +126,15 @@ def _revision(src: Path, wheel_directory: Path) -> str:
             out = zipfile.ZipInfo(arc, date_time=info.date_time)
             out.external_attr, out.compress_type = info.external_attr, zipfile.ZIP_DEFLATED
             h, size = hashlib.sha256(), 0
+            data = None
             if arc == new_di + "METADATA":
-                data = (HERE / "METADATA").read_bytes()  # version + public URLs, as resolved
+                data = (HERE / "METADATA").read_bytes()
+            elif arc in metas:
+                data = _set_meta_url(zin.read(info), PIN["model_url"])
+                metas.discard(arc)
+            elif arc == card:
+                data = _set_card_link(zin.read(info), PIN["model_url"])
+            if data is not None:
                 zout.writestr(out, data)
                 h.update(data)
                 size = len(data)
@@ -107,6 +145,8 @@ def _revision(src: Path, wheel_directory: Path) -> str:
                         h.update(chunk)
                         size += len(chunk)
             rows.writerow([arc, "sha256=" + base64.urlsafe_b64encode(h.digest()).rstrip(b"=").decode(), size])
+        if metas:
+            raise RuntimeError(f"wheel is missing {sorted(metas)}; refusing to install.")
         rows.writerow([new_di + "RECORD", "", ""])
         zout.writestr(new_di + "RECORD", record.getvalue())
     return name
@@ -122,12 +162,7 @@ def build_wheel(wheel_directory, config_settings=None, metadata_directory=None):
             raise RuntimeError(
                 f"{name}: sha256 {digest} does not match the pinned {PIN['sha256']}; refusing to install."
             )
-        with zipfile.ZipFile(tmp_wheel) as z:
-            shipped = z.read(f"{PIN['dist']}-{PIN['wheel_version']}.dist-info/METADATA")
-        if PIN["version"] != PIN["wheel_version"] or shipped != (HERE / "METADATA").read_bytes():
-            return _revision(tmp_wheel, Path(wheel_directory))
-        shutil.move(str(tmp_wheel), Path(wheel_directory) / name)
-    return name
+        return _revision(tmp_wheel, Path(wheel_directory))
 
 
 def build_sdist(sdist_directory, config_settings=None):

@@ -28,4 +28,4 @@ build-backend = "hatchling.build"
 packages = ["src/latincy"]
 
 [tool.hatch.build.targets.sdist]
-include = ["src/latincy", "tests", "tools", "README.md", "LICENSE"]
+include = ["src/latincy", "tests", "tools", "assets", "README.md", "LICENSE", "CHANGELOG.md"]
